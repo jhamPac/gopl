@@ -1,8 +1,6 @@
-package main
+package echo
 
 import (
-	"fmt"
-	"os"
 	"strings"
 )
 
@@ -12,7 +10,6 @@ func echo1(args []string) {
 		s += sep + args[i]
 		sep = " "
 	}
-	fmt.Println(s)
 }
 
 func echo2(args []string) {
@@ -21,16 +18,8 @@ func echo2(args []string) {
 		s += sep + arg
 		sep = " "
 	}
-	fmt.Println(s)
 }
 
 func echo3(args []string) {
-	x := strings.Join(args[1:], " ")
-	fmt.Println(x)
-}
-
-func main() {
-	echo1(os.Args)
-	echo2(os.Args)
-	echo3(os.Args)
+	_ = strings.Join(args[1:], " ")
 }
