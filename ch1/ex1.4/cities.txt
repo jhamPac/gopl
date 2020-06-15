@@ -1,5 +1,8 @@
 phoenix
-paris
+phoenix
+phoenix
 london
-caladan
+paris
+nigeria
+nigeria
 seoul
