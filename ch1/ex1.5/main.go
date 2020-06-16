@@ -5,15 +5,15 @@ import (
 	"image/color"
 	"image/gif"
 	"io"
+	"log"
 	"math"
 	"math/rand"
+	"net/http"
 	"os"
 	"time"
-	"net/http"
-	"log"
 )
 
-var palette = []color.Color{color.Black, color.RGBA{0x00, 0xFF, 0x00, 0xFF}}
+var palette = []color.Color{color.Black, color.RGBA{0x00, 0xFF, 0x00, 0xFF}, color.RGBA{0xFF, 0x00, 0x00, 0xFF}, color.RGBA{0x00, 0x00, 0xFF, 0xFF}}
 
 const (
 	whiteIndex = iota
@@ -27,8 +27,13 @@ func main() {
 		handler := func(w http.ResponseWriter, r *http.Request) {
 			lissajous(w)
 		}
+
 		http.HandleFunc("/", handler)
-		log.Fatal(http.ListenAndServe("localhost:9000", nil))
+
+		log.Print("Listening on port: 9000")
+		if err := http.ListenAndServe(":"+"9000", nil); err != nil {
+			log.Fatal(err)
+		}
 		return
 	}
 	lissajous(os.Stdout)
