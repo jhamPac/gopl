@@ -1,0 +1,4 @@
+1.05s  139678 http://github.com
+1.30s  197412 http://facebook.com
+3.13s   66094 http://apple.com
+3.13 elapsed

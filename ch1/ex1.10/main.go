@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,9 @@ func main() {
 	ch := make(chan string)
 
 	for _, url := range os.Args[1:] {
+		if !strings.HasPrefix("http://", url) {
+			url = "http://" + url
+		}
 		go fetch(url, ch)
 	}
 
