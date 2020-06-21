@@ -3,6 +3,7 @@ package main
 import "fmt"
 
 func comma(s string) string {
+	fmt.Println(s)
 	n := len(s)
 	if n <= 3 {
 		return s
@@ -13,5 +14,5 @@ func comma(s string) string {
 func main() {
 	billion := "1000000000"
 	b := comma(billion)
-	fmt.Println(b)
+	fmt.Printf("Final answer: %s", b)
 }
