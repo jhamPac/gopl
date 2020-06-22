@@ -16,8 +16,8 @@ const (
 
 func main() {
 	var methodStr string
-	mySet := flag.NewFlagSet("", flag.ExitOnError)
-	mySet.StringVar(&methodStr, "m", "256", "sha method")
+	mySet := flag.NewFlagSet("Hash tester", flag.ExitOnError)
+	mySet.StringVar(&methodStr, "method", "256", "sha method")
 	mySet.Parse(os.Args[1:])
 	method := useSha256
 
