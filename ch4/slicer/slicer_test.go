@@ -14,6 +14,27 @@ func TestReverse(t *testing.T) {
 	slicer.Reverse(dummyData)
 
 	if !reflect.DeepEqual(dummyData, expect) {
-		t.Errorf("data %v does not equal %d", dummyData, expect)
+		t.Errorf("data %v does not equal %v", dummyData, expect)
+	}
+}
+
+func TestReverseP(t *testing.T) {
+	dummyData := [6]int{1, 2, 3, 4, 5, 6}
+	expect := [6]int{6, 5, 4, 3, 2, 1}
+
+	slicer.ReverseP(&dummyData)
+
+	if !reflect.DeepEqual(dummyData, expect) {
+		t.Errorf("data %v does not equal expected %v", dummyData, expect)
+	}
+}
+
+func TestPureReverse(t *testing.T) {
+	dummyData := []int{1, 2, 3, 4, 5, 6, 7}
+	expect := []int{7, 6, 5, 4, 3, 2, 1}
+	got := slicer.PureReverse(dummyData)
+
+	if !reflect.DeepEqual(got, expect) {
+		t.Errorf("data %v does not equal expected %v", got, expect)
 	}
 }
