@@ -32,7 +32,7 @@ func RotateLeft(slice []int, numRot int) []int {
 
 	temp := make([]int, lenA)
 	for i, j := 0, numRot; i < lenA; i, j = i+1, j+1 {
-		if j == len(a) {
+		if j == len(slice) {
 			j = 0
 		}
 		temp[i] = slice[j]

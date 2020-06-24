@@ -38,3 +38,13 @@ func TestPureReverse(t *testing.T) {
 		t.Errorf("data %v does not equal expected %v", got, expect)
 	}
 }
+
+func TestRotateLeft(t *testing.T) {
+	dummyData := []int{1, 2, 3, 4, 5}
+	expect := []int{2, 3, 4, 5, 1}
+	got := slicer.RotateLeft(dummyData, 1)
+
+	if !reflect.DeepEqual(got, expect) {
+		t.Errorf("got %v does not equal expected %v", got, expect)
+	}
+}
