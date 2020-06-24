@@ -39,3 +39,28 @@ func RotateLeft(slice []int, numRot int) []int {
 	}
 	return temp
 }
+
+// RemoveDup removes any duplication of strings that are side by side
+func RemoveDup(slice []string) []string {
+	length := len(slice)
+	skipped := 0
+
+	for i := 0; i < length; {
+		foundDup := false
+		j := i + 1
+		for ; j < length; j++ {
+			if slice[i] != slice[j] {
+				break
+			} else {
+				foundDup = true
+				skipped++
+			}
+		}
+
+		if foundDup {
+			copy(slice[i:], slice[j-1:])
+		}
+		i = j
+	}
+	return slice[:length-skipped]
+}
