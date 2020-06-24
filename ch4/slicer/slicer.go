@@ -22,3 +22,20 @@ func PureReverse(s []int) []int {
 	}
 	return slice
 }
+
+// RotateLeft rotates a slice n times provided by the second argument
+func RotateLeft(slice []int, numRot int) []int {
+	lenA := len(slice)
+	if numRot <= 0 || numRot >= lenA {
+		return slice
+	}
+
+	temp := make([]int, lenA)
+	for i, j := 0, numRot; i < lenA; i, j = i+1, j+1 {
+		if j == len(a) {
+			j = 0
+		}
+		temp[i] = slice[j]
+	}
+	return temp
+}
