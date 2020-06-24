@@ -48,3 +48,13 @@ func TestRotateLeft(t *testing.T) {
 		t.Errorf("got %v does not equal expected %v", got, expect)
 	}
 }
+
+func TestRemoveDup(t *testing.T) {
+	dummyData := []string{"diamonds", "diamonds", "hearts", "hearts", "hearts"}
+	expect := []string{"diamonds", "hearts"}
+	got := slicer.RemoveDup(dummyData)
+
+	if !reflect.DeepEqual(got, expect) {
+		t.Errorf("duplicated strings were not removed from %v to %v", dummyData, got)
+	}
+}
