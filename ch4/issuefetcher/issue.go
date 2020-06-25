@@ -1,4 +1,4 @@
-package issue
+package issuefetcher
 
 import "time"
 
