@@ -89,5 +89,17 @@ var toID = flag.Int("to", 01, "id to which to build index")
 var search = flag.String("search", "", "search for transcript and title")
 
 func main() {
+	flag.Parse()
+	output := newIndex(outputfile)
 
+	if *fromID != 0 && *toID != 0 {
+		output.build(*fromID, *toID)
+	}
+
+	if *search != "" {
+		foundInfos := output.search(*search)
+		for _, foundInfo := range foundInfos {
+			fmt.Printf("URL: %v\nTranscript: %v\n\n", foundInfo.ImgURL, foundInfo.Transcript)
+		}
+	}
 }
