@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -81,4 +82,12 @@ func newIndex(filePath string) *Index {
 		Infos:    infos,
 		FilePath: filePath,
 	}
+}
+
+var fromID = flag.Int("from", 0, "id from which to build index")
+var toID = flag.Int("to", 01, "id to which to build index")
+var search = flag.String("search", "", "search for transcript and title")
+
+func main() {
+
 }
