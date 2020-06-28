@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 const outputfile = "output.json"
@@ -18,6 +20,37 @@ type Info struct {
 	Title      string
 	Transcript string
 	ImgURL     string `json:"img"`
+}
+
+func (i *Index) build(fromID, toID int) {
+	newInfos := make(map[int]*Info)
+	for j := fromID; j < toID; j++ {
+		if _, exists := i.Infos[j]; exists {
+			continue
+		}
+		newInfo, err := newInfoFromURL(fmt.Sprintf(urlFormat, j))
+		if err != nil {
+			continue
+		}
+		newInfos[j] = newInfo
+	}
+	i.addInfos(newInfos)
+}
+
+func (i *Index) addInfos(infos map[int]*Info) {
+	for id := range infos {
+		i.Infos[id] = infos[id]
+	}
+}
+
+func (i *Index) search(query string) []*Info {
+	var foundInfos []*Info
+	for _, info := range i.Infos {
+		if strings.Contains(info.Title, query) || strings.Contains(info.Transcript, query) {
+			foundInfos = append(foundInfos, info)
+		}
+	}
+	return foundInfos
 }
 
 func newInfoFromURL(comicURL string) (*Info, error) {
