@@ -13,8 +13,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "findlinks1: %v\n", err)
 		os.Exit(1)
 	}
-	slice := make([]string, 0)
-	for _, link := range visit(slice, doc) {
+	for _, link := range visit(nil, doc) {
 		fmt.Println(link)
 	}
 }
