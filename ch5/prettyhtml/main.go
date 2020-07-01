@@ -71,3 +71,12 @@ func startElement(n *html.Node) {
 		fmt.Printf("%*s<!--%s-->\n", depth*2, "", n.Data)
 	}
 }
+
+func endElement(n *html.Node) {
+	if n.Type == html.ElementNode {
+		depth--
+		if n.FirstChild != nil {
+			fmt.Printf("%*s</%s>\n", depth*2, "", n.Data)
+		}
+	}
+}
