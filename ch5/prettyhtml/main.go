@@ -13,6 +13,9 @@ type htmlPrettier func(n *html.Node)
 
 func main() {
 	for _, url := range os.Args[1:] {
+		if !strings.HasPrefix(url, "https://") {
+			url = "https://" + url
+		}
 		outline(url)
 	}
 }
