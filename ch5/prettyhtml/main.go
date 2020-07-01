@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	"golang.org/x/net/html"
 )
@@ -43,5 +45,29 @@ func forEachNode(n *html.Node, pre, post htmlPrettier) {
 
 	if post != nil {
 		post(n)
+	}
+}
+
+var depth int
+
+func startElement(n *html.Node) {
+	if n.Type == html.ElementNode {
+		fmt.Printf("%*s<%s", depth*2, "", n.Data)
+		for _, a := range n.Attr {
+			fmt.Printf(" %s=%q", a.Key, a.Val)
+		}
+		if n.FirstChild != nil {
+			fmt.Printf(">\n")
+		} else {
+			fmt.Printf(" />\n")
+		}
+		depth++
+	} else if n.Type == html.TextNode {
+		trimmed := strings.TrimSpace(n.Data)
+		if trimmed != "" {
+			fmt.Printf("%*s%s\n", depth*2, "", trimmed)
+		}
+	} else if n.Type == html.CommentNode {
+		fmt.Printf("%*s<!--%s-->\n", depth*2, "", n.Data)
 	}
 }
