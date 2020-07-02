@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 var prereqs = map[string][]string{
@@ -27,7 +28,7 @@ var prereqs = map[string][]string{
 func main() {
 	order, err := topoSort(prereqs)
 	if err != nil {
-		fmt.Println(os.Stderr, err)
+		fmt.Frintln(os.Stderr, err)
 		os.Exit(1)
 	}
 	for i, course := range order {
@@ -42,4 +43,33 @@ func index(s string, slice []string) (int, error) {
 		}
 	}
 	return 0, fmt.Errorf("not found")
+}
+
+func topoSort(m map[string][]string) (order []string, err error) {
+	resolved := make(map[string]bool)
+	var visitAll func(items []string, parents []string)
+
+	visitAll = func(items []string, parents []string) {
+		for _, k := range items {
+			vResolved, seen := resolved[k]
+			if seen && !vResolved {
+				start, _ := index(k, parents) // ignore error since the key has to be in parents
+				err = fmt.Errorf("cycle: %s", strings.Join(append(parents[start:], k), " ->"))
+			}
+			if !seen {
+				resolved[k] = false
+				visitAll(m[k], append(parents, k))
+				resolved[k] = true
+				order = append(order, k)
+			}
+		}
+	}
+
+	for k := range m {
+		if err != nil {
+			return nil, err
+		}
+		visitAll([]string{k}, nil)
+	}
+	return order, nil
 }
