@@ -1,4 +1,4 @@
-package toposort
+package main
 
 import (
 	"fmt"
