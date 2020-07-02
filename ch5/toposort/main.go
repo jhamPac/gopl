@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"sort"
 )
 
 var prereqs = map[string][]string{
@@ -35,26 +34,15 @@ func topoSort(m map[string][]string) []string {
 
 	visitAll = func(items []string) {
 		for _, item := range items {
-			fmt.Println("The item before the if:", item)
 			if !seen[item] {
 				seen[item] = true
-				fmt.Println("the slice being passed in:", m[item])
 				visitAll(m[item])
 				order = append(order, item)
-				fmt.Println("(working backwards now):", item)
-				fmt.Println("printing order:", order)
-				fmt.Println()
 			}
 		}
 	}
-	var keys []string
-	for key := range m {
-		keys = append(keys, key)
+	for k := range m {
+		visitAll([]string{k})
 	}
-
-	// sorts the keys so they are in alphabetical order
-	sort.Strings(keys)
-	fmt.Printf("the keys in order %v:\n", keys)
-	visitAll(keys)
 	return order
 }
