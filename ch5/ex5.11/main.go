@@ -28,7 +28,7 @@ var prereqs = map[string][]string{
 func main() {
 	order, err := topoSort(prereqs)
 	if err != nil {
-		fmt.Frintln(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 	for i, course := range order {
@@ -54,7 +54,7 @@ func topoSort(m map[string][]string) (order []string, err error) {
 			vResolved, seen := resolved[k]
 			if seen && !vResolved {
 				start, _ := index(k, parents) // ignore error since the key has to be in parents
-				err = fmt.Errorf("cycle: %s", strings.Join(append(parents[start:], k), " ->"))
+				err = fmt.Errorf("cycle: %s", strings.Join(append(parents[start:], k), " -> "))
 			}
 			if !seen {
 				resolved[k] = false
