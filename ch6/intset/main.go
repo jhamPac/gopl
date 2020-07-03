@@ -56,3 +56,42 @@ func (s *IntSet) String() string {
 	buf.WriteByte('}')
 	return buf.String()
 }
+
+func popcount(x uint64) int {
+	count := 0
+	for x != 0 {
+		count++
+		x &= x - 1
+	}
+	return count
+}
+
+// Len returns the number of elements
+func (s *IntSet) Len() int {
+	count := 0
+	for _, word := range s.words {
+		count += popcount(word)
+	}
+	return count
+}
+
+// Remove x from set
+func (s *IntSet) Remove(x int) {
+	word, bit := x/64, uint(x%64)
+	s.words[word] &^= 1 << bit
+}
+
+// Clear the whole set
+func (s *IntSet) Clear() {
+	for i := range s.words {
+		s.words[i] = 0
+	}
+}
+
+// Copy over a new IntSet
+func (s *IntSet) Copy() *IntSet {
+	new := &IntSet{}
+	new.words = make([]uint64, len(s.words))
+	copy(new.words, s.words)
+	return new
+}
