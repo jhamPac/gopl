@@ -25,6 +25,13 @@ func (s *IntSet) Add(x int) {
 	s.words[word] |= 1 << bit
 }
 
+// AddAll is the variadic version of Add
+func (s *IntSet) AddAll(nums ...int) {
+	for _, n := range nums {
+		s.Add(n)
+	}
+}
+
 // UnionWith sets s to the union of s and t
 func (s *IntSet) UnionWith(t *IntSet) {
 	for i, tword := range t.words {
