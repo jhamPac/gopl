@@ -6,6 +6,7 @@ import (
 	"unicode/utf8"
 )
 
+// LineCounter holds counts for lines
 type LineCounter struct {
 	lines int
 }
@@ -19,6 +20,7 @@ func (c *LineCounter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+// N returns the number of lines counted
 func (c *LineCounter) N() int {
 	return c.lines
 }
@@ -27,6 +29,7 @@ func (c *LineCounter) String() string {
 	return fmt.Sprintf("%d", c.lines)
 }
 
+// WordCounter counts words
 type WordCounter struct {
 	words  int
 	inWord bool
@@ -83,6 +86,7 @@ func (c *WordCounter) Write(p []byte) (n int, err error) {
 	}
 }
 
+// N returns the count for words
 func (c *WordCounter) N() int {
 	return c.words
 }
