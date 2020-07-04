@@ -3,6 +3,8 @@ package reader
 import (
 	"bytes"
 	"testing"
+
+	"golang.org/x/net/html"
 )
 
 func TestNewReader(t *testing.T) {
@@ -15,5 +17,14 @@ func TestNewReader(t *testing.T) {
 	}
 	if b.String() != s {
 		t.Logf("%q != %q", b.String(), s)
+	}
+}
+
+func TestNewReaderWithHTML(t *testing.T) {
+	s := "<html><body><p>hi</p></body></html>"
+	_, err := html.Parse(NewReader(s))
+	if err != nil {
+		t.Log(err)
+		t.Fail()
 	}
 }
