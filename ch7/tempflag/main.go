@@ -45,6 +45,7 @@ func (cf *celsiusFlag) Set(s string) error {
 		return nil
 	case "F", "°F":
 		cf.Celsius = FToC(Fahrenheit(value))
+		return nil
 	case "K":
 		cf.Celsius = KToC(Kelvin(value))
 		return nil
