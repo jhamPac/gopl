@@ -1,6 +1,9 @@
-package track
+package music
 
 import (
+	"fmt"
+	"os"
+	"text/tabwriter"
 	"time"
 )
 
@@ -21,8 +24,8 @@ func length(s string) time.Duration {
 	return d
 }
 
-// New creates and returns a pointer to a Track type
-func New(title, artist, album string, year int, t string) *Track {
+// NewTrack creates and returns a pointer to a Track type
+func NewTrack(title, artist, album string, year int, t string) *Track {
 	return &Track{
 		Title:  title,
 		Artist: artist,
@@ -30,4 +33,16 @@ func New(title, artist, album string, year int, t string) *Track {
 		Year:   year,
 		Length: length(t),
 	}
+}
+
+// PrintTracks prints the given track slice to an output
+func PrintTracks(tracks []*Track) {
+	const format = "%v\t%v\t%v\t%v\t%v\t\n"
+	tw := new(tabwriter.Writer).Init(os.Stdout, 0, 8, 2, ' ', 0)
+	fmt.Fprintf(tw, format, "Title", "Artist", "Album", "Year", "Length")
+	fmt.Fprintf(tw, format, "-----", "-----", "-----", "-----", "-----")
+	for _, t := range tracks {
+		fmt.Fprintf(tw, format, t.Title, t.Artist, t.Album, t.Year, t.Length)
+	}
+	tw.Flush()
 }
