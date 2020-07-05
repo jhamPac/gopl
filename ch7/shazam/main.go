@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"github.com/jhampac/gopl/ch7/shazam/music"
+	"github.com/jhampac/gopl/ch7/shazam/sorting"
 )
 
 func main() {
@@ -13,6 +14,6 @@ func main() {
 		music.NewTrack("Go Ahead", "Alicia Keys", "As Iam", 2007, "4m36s"),
 		music.NewTrack("Read 2 Go", "Martin Solveig", "Samsh", 2011, "4m00s"),
 	}
-
 	sort.Sort(sorting.ByArtist(tracks))
+	music.PrintTracks(tracks)
 }
