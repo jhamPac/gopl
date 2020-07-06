@@ -70,5 +70,54 @@ func parseExpr(lex *lexer) Expr {
 }
 
 func parseBinary(lex *lexer, prec1 int) Expr {
+	lhs := parseUnary(lex)
+	for prec := precedence(lex.token); prec >= prec1; prec-- {
+		for precedence(lex.token) == prec {
+			op := lex.token
+			lex.next()
+			rhs := parseBinary(lex, prec+1)
+			lhs := binary{op, lhs, rhs}
+		}
+	}
+	return lhs
+}
 
+func parseUnary(lex *lexer) Expr {
+	if lex.token == '+' || lex.token == '-' {
+		op := lex.token
+		lex.next()
+		return unary{op, parseUnary(lex)}
+	}
+	primary := parsePrimary(lex)
+	if lex.token == '!' {
+		lex.next()
+		return postUnary{'!', primary}
+	}
+	return primary
+}
+
+func parsePrimary(lex *lexer) Expr {
+	switch lex.token {
+	case scanner.Ident:
+		id := lex.text()
+		lex.next()
+		if lex.token != '(' {
+			return Var(id)
+		}
+		lex.next()
+		var args []Expr
+		if lex.token != ')' {
+			for {
+				args = append(args, parseExpr(lex))
+				if lex.token != ',' {
+					break
+				}
+				lex.next()
+			}
+			if lex.token != ')' {
+				msg := fmt.Sprintf("got %q, want ')'", lex.token)
+				panic(lexPanic(msg))
+			}
+		}
+	}
 }
