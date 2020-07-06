@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 )
 
 var listHTML = template.Must(template.New("list").Parse(`
@@ -60,6 +61,10 @@ func (p *PriceDB) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	p.db[item] = price
 	p.Unlock()
+	w.Write([]byte("successfully created"))
+	time.AfterFunc(2*time.Second, func() {
+		http.Redirect(w, r, "http://localhost:9000/", http.StatusSeeOther)
+	})
 }
 
 // Update an item in the database
