@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -120,4 +121,29 @@ func (p *PriceDB) Read(w http.ResponseWriter, r *http.Request) {
 	p.Lock()
 	fmt.Fprintf(w, "%s: %d\n", item, p.db[item])
 	p.Unlock()
+}
+
+// List generates an HTML output of the simcart inventory
+func (p *PriceDB) List(w http.ResponseWriter, r *http.Request) {
+	p.Lock()
+	if err := listHTML.Execute(w, p.db); err != nil {
+		http.Error(w, "error", http.StatusInternalServerError)
+	}
+	p.Unlock()
+}
+
+func main() {
+	p := &PriceDB{}
+	p.db = make(map[string]int, 0)
+	p.db["shirt"] = 40
+	http.HandleFunc("/create", p.Create)
+	http.HandleFunc("/read", p.Read)
+	http.HandleFunc("/update", p.Update)
+	http.HandleFunc("/delete", p.Delete)
+	http.HandleFunc("/list", p.List)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Welcome to SimCart 🛒")
+	})
+	fmt.Println("SimCart is running on port 9000")
+	log.Fatal(http.ListenAndServe("localhost:9000", nil))
 }
