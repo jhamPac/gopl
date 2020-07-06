@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -55,11 +56,11 @@ var trackTable = template.Must(template.New("trackTable").Parse(`
 		<table>
 		  <thead>
 				<tr>
-					<th><a href="/?sort=Title">Title</a></th>
-					<th><a href="/?sort=Artist">Artist</a></th>
-					<th><a href="/?sort=Album">Album</a></th>
-					<th><a href="/?sort=Year">Year</a></th>
-					<th><a href="/?sort=Length">Length</a></th>
+					<th><a href="/?sort=title">Title</a></th>
+					<th><a href="/?sort=artist">Artist</a></th>
+					<th><a href="/?sort=album">Album</a></th>
+					<th><a href="/?sort=year">Year</a></th>
+					<th><a href="/?sort=length">Length</a></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -80,6 +81,7 @@ var trackTable = template.Must(template.New("trackTable").Parse(`
 
 func main() {
 	http.HandleFunc("/", handler)
+	fmt.Println("Shazam tracks list is running!")
 	log.Fatal(http.ListenAndServe("localhost:9000", nil))
 }
 
@@ -88,15 +90,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 	sort.Sort(clickedSort{tracks, func(track1, track2 *music.Track) bool {
 		switch sortBy {
-		case "Title":
+		case "title":
 			return track1.Title < track2.Title
-		case "Year":
+		case "year":
 			return track1.Year < track2.Year
-		case "Length":
+		case "length":
 			return track1.Length < track2.Length
-		case "Artist":
+		case "artist":
 			return track1.Artist < track2.Artist
-		case "Album":
+		case "album":
 			return track1.Album < track2.Album
 		}
 		return false
