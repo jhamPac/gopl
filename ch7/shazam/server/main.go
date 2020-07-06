@@ -81,7 +81,7 @@ var trackTable = template.Must(template.New("trackTable").Parse(`
 
 func main() {
 	http.HandleFunc("/", handler)
-	fmt.Println("Shazam tracks list is running!")
+	fmt.Println("Shazam track listing is running!")
 	log.Fatal(http.ListenAndServe("localhost:9000", nil))
 }
 
