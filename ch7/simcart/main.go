@@ -85,3 +85,21 @@ func (p *PriceDB) Update(w http.ResponseWriter, r *http.Request) {
 	p.db[item] = price
 	p.Unlock()
 }
+
+// Delete an item from the database
+func (p *PriceDB) Delete(w http.ResponseWriter, r *http.Request) {
+	item := r.FormValue("item")
+	if item == "" {
+		http.Error(w, "no item given", http.StatusBadRequest)
+		return
+	}
+
+	if _, ok := p.db[item]; !ok {
+		http.Error(w, fmt.Sprintf("%s does not exist", item), http.StatusNotFound)
+		return
+	}
+
+	p.Lock()
+	delete(p.db, item)
+	p.Unlock()
+}
