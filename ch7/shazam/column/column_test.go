@@ -68,3 +68,22 @@ func TestByColumns_NameAge(t *testing.T) {
 		{"Bob", 20},
 	}, t)
 }
+
+func TestByColumns_AgeName(t *testing.T) {
+	people := []Person{
+		{"Alice", 20},
+		{"Bob", 12},
+		{"Bob", 20},
+		{"Alice", 12},
+	}
+	c := &ByColumns{people, nil, 2}
+	c.Select(c.LessName)
+	c.Select(c.LessAge)
+	sort.Sort(c)
+	Cmp(people, []Person{
+		{"Alice", 12},
+		{"Bob", 12},
+		{"Alice", 20},
+		{"Bob", 20},
+	}, t)
+}
