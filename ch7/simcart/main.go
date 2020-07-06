@@ -103,3 +103,21 @@ func (p *PriceDB) Delete(w http.ResponseWriter, r *http.Request) {
 	delete(p.db, item)
 	p.Unlock()
 }
+
+// Read all the products from the simcart inventory
+func (p *PriceDB) Read(w http.ResponseWriter, r *http.Request) {
+	item := r.FormValue("item")
+	if item == "" {
+		http.Error(w, "no item given", http.StatusBadRequest)
+		return
+	}
+
+	if _, ok := p.db[item]; !ok {
+		http.Error(w, fmt.Sprintf("%s does not exist", item), http.StatusNotFound)
+		return
+	}
+
+	p.Lock()
+	fmt.Fprintf(w, "%s: %d\n", item, p.db[item])
+	p.Unlock()
+}
