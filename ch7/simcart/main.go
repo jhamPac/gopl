@@ -61,9 +61,8 @@ func (p *PriceDB) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	p.db[item] = price
 	p.Unlock()
-	w.Write([]byte("successfully created"))
 	time.AfterFunc(2*time.Second, func() {
-		http.Redirect(w, r, "http://localhost:9000/", http.StatusSeeOther)
+		http.Redirect(w, r, "http://localhost:9000/list", http.StatusSeeOther)
 	})
 }
 
