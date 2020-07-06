@@ -2,6 +2,7 @@ package eval
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"text/scanner"
 )
@@ -76,7 +77,7 @@ func parseBinary(lex *lexer, prec1 int) Expr {
 			op := lex.token
 			lex.next()
 			rhs := parseBinary(lex, prec+1)
-			lhs := binary{op, lhs, rhs}
+			lhs = binary{op, lhs, rhs}
 		}
 	}
 	return lhs
@@ -119,5 +120,27 @@ func parsePrimary(lex *lexer) Expr {
 				panic(lexPanic(msg))
 			}
 		}
+		lex.next()
+		return call{id, args}
+
+	case scanner.Int, scanner.Float:
+		f, err := strconv.ParseFloat(lex.text(), 64)
+		if err != nil {
+			panic(lexPanic(err.Error()))
+		}
+		lex.next()
+		return literal(f)
+
+	case '(':
+		lex.next()
+		e := parseExpr(lex)
+		if lex.token != ')' {
+			msg := fmt.Sprintf("got %s, want ')'", lex.describe())
+			panic(lexPanic(msg))
+		}
+		lex.next()
+		return e
 	}
+	msg := fmt.Sprintf("unexpected %s", lex.describe())
+	panic(lexPanic(msg))
 }
