@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 	"strconv"
 )
 
@@ -81,4 +82,47 @@ func (c *Conn) dataConn() (conn io.ReadWriteCloser, err error) {
 		return nil, fmt.Errorf("previous command not PASV or PORT")
 	}
 	return conn, nil
+}
+
+func (c *Conn) list(args []string) {
+	var filename string
+	switch len(args) {
+	case 0:
+		filename = "."
+	case 1:
+		filename = args[0]
+	default:
+		c.writeln("501 too many arguments")
+		return
+	}
+
+	file, err := os.Open(filename)
+	if err != nil {
+		c.writeln("550 file not found")
+		return
+	}
+	c.writeln("150 here comes the directory listing")
+	w, err := c.dataConn()
+	if err != nil {
+		c.writeln("425 can't open data connection")
+		return
+	}
+	defer w.Close()
+	stat, err := file.Stat()
+	if err != nil {
+		c.log(logPairs{"cmd": "LIST", "err": err})
+		c.writeln("450 requested file action not taken. file unavailable")
+	}
+
+	if stat.isDir() {
+
+	}
+}
+
+func (c *Conn) writeln(s ...interface{}) {
+	if c.cmdErr != nil {
+		return
+	}
+	s = append(s, "\r\n")
+	_, c.cmdErr = fmt.Fprint(c.rw, s...)
 }
