@@ -1,7 +1,10 @@
 package ftpd
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"log"
 	"net"
 	"strconv"
 )
@@ -47,4 +50,35 @@ func hostPortFromFTP(address string) (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%d.%d.%d.%d:%d", a, b, c, d, 256*p1+p2), nil
+}
+
+type logPairs map[string]interface{}
+
+func (c *Conn) log(pairs logPairs) {
+	b := &bytes.Buffer{}
+	fmt.Fprintf(b, "addr=%s", c.rw.RemoteAddr().String())
+	for k, v := range pairs {
+		fmt.Fprintf(b, " %s=%s", k, v)
+	}
+	log.Print(b.String())
+}
+
+func (c *Conn) dataConn() (conn io.ReadWriteCloser, err error) {
+	switch c.prevCmd {
+	case "PORT":
+		conn, err = net.Dial("tcp", c.dataHostPort)
+		if err != nil {
+			return nil, err
+		}
+
+	case "PASV":
+		conn, err = c.pasvListener.Accept()
+		if err != nil {
+			return nil, err
+		}
+
+	default:
+		return nil, fmt.Errorf("previous command not PASV or PORT")
+	}
+	return conn, nil
 }
