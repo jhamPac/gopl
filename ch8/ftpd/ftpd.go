@@ -114,9 +114,27 @@ func (c *Conn) list(args []string) {
 		c.writeln("450 requested file action not taken. file unavailable")
 	}
 
-	if stat.isDir() {
-
+	if stat.IsDir() {
+		filenames, err := file.Readdirnames(0)
+		if err != nil {
+			c.writeln("550 can't read directory")
+			return
+		}
+		for _, f := range filenames {
+			_, err = fmt.Fprint(w, f, c.lineEnding())
+			if err != nil {
+				c.log(logPairs{"cmd": "LIST", "err": err})
+				c.writeln("426 connection closed: transfer aborted")
+			}
+		}
+	} else {
+		_, err = fmt.Fprint(w, filename, c.lineEnding())
+		if err != nil {
+			c.log(logPairs{"cmd": "LIST", "err": err})
+			c.writeln("426 connection closed: transfer aborted")
+		}
 	}
+	c.writeln("226 closing data connection. list successful")
 }
 
 func (c *Conn) writeln(s ...interface{}) {
@@ -125,4 +143,11 @@ func (c *Conn) writeln(s ...interface{}) {
 	}
 	s = append(s, "\r\n")
 	_, c.cmdErr = fmt.Fprint(c.rw, s...)
+}
+
+func (c *Conn) lineEnding() string {
+	if c.binary {
+		return "\n"
+	}
+	return "\r\n"
 }
