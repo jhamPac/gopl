@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // Conn is the main FTP interface
@@ -195,4 +196,49 @@ func (c *Conn) pasv(args []string) {
 		return
 	}
 	c.writeln(fmt.Sprintf("227 =%s", addr))
+}
+
+func (c *Conn) port(args []string) {
+	if len(args) != 1 {
+		c.writeln("501 usage: PORT a,b,c,d,p1,p2")
+		return
+	}
+	var err error
+	c.dataHostPort, err = hostPortFromFTP(args[0])
+	if err != nil {
+		c.log(logPairs{"cmd": "PORT", "err": err})
+		c.writeln("501 can't parse address")
+		return
+	}
+	c.writeln("200 PORT command successful")
+}
+
+// typ is short for type but type is a keyword
+func (c *Conn) typ(args []string) {
+	if len(args) < 1 || len(args) > 2 {
+		c.writeln("501 usage: type takes 1 or 2 arguments")
+		return
+	}
+	switch strings.ToUpper(strings.Join(args, " ")) {
+	case "A", "A N":
+		c.binary = false
+	case "I", "L 8":
+		c.binary = true
+	default:
+		c.writeln("504 unsupported type. supported types: A, A N, I, L 8")
+		return
+	}
+	c.writeln("200 TYPE set")
+}
+
+func (c *Conn) stru(args []string) {
+	if len(args) != 1 {
+		c.writeln("501 usage: STRU F")
+		return
+	}
+	if args[0] != "F" {
+		c.writeln("504 only file structure is supported")
+		return
+	}
+	c.writeln("200 STRU set")
 }
