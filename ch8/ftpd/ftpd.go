@@ -151,3 +151,48 @@ func (c *Conn) lineEnding() string {
 	}
 	return "\r\n"
 }
+
+// CmdErr returns command errors
+func (c *Conn) CmdErr() error {
+	return c.cmdErr
+}
+
+// Close closes the connection
+func (c *Conn) Close() error {
+	err := c.rw.Close()
+	if err != nil {
+		c.log(logPairs{"err": fmt.Errorf("closing command connection: %s", err)})
+	}
+	return err
+}
+
+func (c *Conn) pasv(args []string) {
+	if len(args) > 0 {
+		c.writeln("501 too many arguments")
+		return
+	}
+	var firstError error
+	storeFirstError := func(err error) {
+		if firstError == nil {
+			firstError = err
+		}
+	}
+
+	var err error
+	c.pasvListener, err = net.Listen("tcp4", "")
+	storeFirstError(err)
+	_, port, err := net.SplitHostPort(c.pasvListener.Addr().String())
+	storeFirstError(err)
+	ip, _, err := net.SplitHostPort(c.rw.LocalAddr().String())
+	storeFirstError(err)
+	addr, err := hostPortToFTP(fmt.Sprintf("%s:%s", ip, port))
+	storeFirstError(err)
+	if firstError != nil {
+		c.pasvListener.Close()
+		c.pasvListener = nil
+		c.log(logPairs{"cmd": "PASV", "err": err})
+		c.writeln("451 requested action aborted. local error in processing")
+		return
+	}
+	c.writeln(fmt.Sprintf("227 =%s", addr))
+}
