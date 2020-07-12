@@ -1,6 +1,7 @@
 package ftpd
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -241,4 +242,54 @@ func (c *Conn) stru(args []string) {
 		return
 	}
 	c.writeln("200 STRU set")
+}
+
+func (c *Conn) retr(args []string) {
+	if len(args) != 1 {
+		c.writeln("501 usage: RETR filename")
+		return
+	}
+	filename := args[0]
+	file, err := os.Open(filename)
+	if err != nil {
+		c.log(logPairs{"cmd": "RETR", "err": err})
+		c.writeln("550 file not found")
+		return
+	}
+	c.writeln("150 file ok. sending")
+	conn, err := c.dataConn()
+	if err != nil {
+		c.writeln("425 can't open data connection")
+		return
+	}
+	defer conn.Close()
+	if c.binary {
+		_, err := io.Copy(conn, file)
+		if err != nil {
+			c.log(logPairs{"cmd": "RETR", "err": err})
+			c.writeln("450 file unavailable")
+			return
+		}
+	} else {
+		// convert line endings from LF -> CRLF
+		r := bufio.NewReader(file)
+		w := bufio.NewWriter(conn)
+		for {
+			line, isPrefix, err := r.ReadLine()
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				c.log(logPairs{"cmd": "RETR", "err": err})
+				c.writeln("450 file unavailable")
+				return
+			}
+			w.Write(line)
+			if !isPrefix {
+				w.Write([]byte("\r\n"))
+			}
+		}
+		w.Flush()
+	}
+	c.writeln("226 transfer complete")
 }
