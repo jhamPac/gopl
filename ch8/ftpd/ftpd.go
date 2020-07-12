@@ -322,7 +322,8 @@ func (c *Conn) stor(args []string) {
 	c.writeln("226 transfer complete")
 }
 
-func (c *Conn) run() {
+// Run executes the FTP server
+func (c *Conn) Run() {
 	c.writeln("220 ready")
 	s := bufio.NewScanner(c.rw)
 	var cmd string
