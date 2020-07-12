@@ -293,3 +293,88 @@ func (c *Conn) retr(args []string) {
 	}
 	c.writeln("226 transfer complete")
 }
+
+func (c *Conn) stor(args []string) {
+	if len(args) != 1 {
+		c.writeln("501 usage: STOR filename")
+		return
+	}
+	filename := args[0]
+	file, err := os.Create(filename)
+	if err != nil {
+		c.log(logPairs{"cmd": "STOR", "err": err})
+		c.writeln("550 file can't be created")
+		return
+	}
+	c.writeln("150 ok to send data")
+	conn, err := c.dataConn()
+	if err != nil {
+		c.writeln("425 can't open data connection")
+		return
+	}
+	defer conn.Close()
+	_, err = io.Copy(file, conn)
+	if err != nil {
+		c.log(logPairs{"cmd": "RETR", "err": err})
+		c.writeln("450 file unavailable")
+		return
+	}
+	c.writeln("226 transfer complete")
+}
+
+func (c *Conn) run() {
+	c.writeln("220 ready")
+	s := bufio.NewScanner(c.rw)
+	var cmd string
+	var args []string
+	for s.Scan() {
+		if c.CmdErr() != nil {
+			c.log(logPairs{"err": fmt.Errorf("command connection: %s", c.CmdErr())})
+			return
+		}
+		fields := strings.Fields(s.Text())
+		if len(fields) == 0 {
+			continue
+		}
+		cmd = strings.ToUpper(fields[0])
+		args = nil
+		if len(fields) > 1 {
+			args = fields[1:]
+		}
+
+		switch cmd {
+		case "LIST":
+			c.list(args)
+		case "NOOP":
+			c.writeln("200 ready")
+		case "PASV":
+			c.pasv(args)
+		case "PORT":
+			c.port(args)
+		case "QUIT":
+			c.writeln("221 goodbye")
+		case "RETR":
+			c.retr(args)
+		case "STOR":
+			c.stor(args)
+		case "STRU":
+			c.stru(args)
+		case "SYST":
+			c.writeln("215 UNIX Type: L8")
+		case "TYPE":
+			c.typ(args)
+		case "USER":
+			c.writeln("230 login successful")
+		default:
+			c.writeln(fmt.Sprintf("502 command %q not implemented", cmd))
+		}
+		if cmd != "PASV" && c.pasvListener != nil {
+			c.pasvListener.Close()
+			c.pasvListener = nil
+		}
+		c.prevCmd = cmd
+	}
+	if s.Err() != nil {
+		c.log(logPairs{"err": fmt.Errorf("scanning commands: %s", s.Err())})
+	}
+}
