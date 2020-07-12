@@ -17,6 +17,7 @@ func main() {
 	if err != nil {
 		log.Fatal("opening main listener:", err)
 	}
+	fmt.Printf("FTP listening on port: %d", port)
 	for {
 		c, err := ln.Accept()
 		if err != nil {
