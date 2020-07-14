@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/gob"
+	"flag"
 	"io"
 	"log"
 	"net"
@@ -208,4 +209,35 @@ func client(ip string) error {
 		return errors.Wrap(err, "flush failed")
 	}
 	return nil
+}
+
+func server() error {
+	endpoint := NewEndpoint()
+	endpoint.AddHandleFunc("STRING", handleStrings)
+	endpoint.AddHandleFunc("GOB", handleGob)
+	return endpoint.Listen()
+}
+
+func main() {
+	connect := flag.String("connect", "", "IP address of process to join")
+	flag.Parse()
+
+	if *connect != "" {
+		err := client(*connect)
+		if err != nil {
+			log.Println("error: ", errors.WithStack(err))
+		}
+		log.Println("client done")
+		return
+	}
+
+	err := server()
+	if err != nil {
+		log.Println("error:", errors.WithStack(err))
+	}
+	log.Println("server done")
+}
+
+func init() {
+	log.SetFlags(log.Lshortfile)
 }
