@@ -163,6 +163,7 @@ func client(ip string) error {
 	if err != nil {
 		return errors.Wrap(err, "client: failed to open connection to "+ip+Port)
 	}
+
 	log.Println("send the string request")
 	n, err := rw.WriteString("STRING\n")
 	if err != nil {
@@ -187,4 +188,24 @@ func client(ip string) error {
 	}
 
 	log.Println("STRING request: got a response:", response)
+
+	log.Println("send a struct as GOB:")
+	log.Printf("outer complexData struct: \n%#v\n", testStruct)
+	log.Printf("inner complexData struct: \n%#v\n", testStruct.C)
+
+	enc := gob.NewEncoder(rw)
+	n, err = rw.WriteString("GOB\n")
+	if err != nil {
+		return errors.Wrapf(err, "could not write GOB data (%d) bytes were written", strconv.Itoa(n))
+	}
+
+	err = enc.Encode(testStruct)
+	if err != nil {
+		return errors.Wrapf(err, "encode failed for struct: %#v", testStruct)
+	}
+	err = rw.Flush()
+	if err != nil {
+		return errors.Wrap(err, "flush failed")
+	}
+	return nil
 }
