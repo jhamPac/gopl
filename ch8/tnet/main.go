@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"io"
 	"log"
 	"net"
+	"strings"
 	"sync"
 
 	"github.com/pkg/errors"
@@ -74,5 +76,37 @@ func (e *Endpoint) Listen() error {
 		}
 		log.Println("handle incoming message")
 		go e.handleMessages(conn)
+	}
+}
+
+func (e *Endpoint) handleMessages(conn net.Conn) {
+	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
+	defer conn.Close()
+
+	for {
+		log.Print("receive command ")
+		cmd, err := rw.ReadString('\n')
+
+		switch {
+		case err == io.EOF:
+			log.Println("reached EOF - close this connection.\n ***")
+			return
+
+		case err != nil:
+			log.Println("\nerror reading command. got: '"+cmd+"'\n", err)
+			return
+		}
+
+		cmd = strings.Trim(cmd, "\n")
+		log.Println(cmd + "'")
+
+		e.m.RLock()
+		handleCommand, ok := e.handler[cmd]
+		e.m.RUnlock()
+		if !ok {
+			log.Printf("command %q is not registered\n", cmd)
+			return
+		}
+		handleCommand(rw)
 	}
 }
