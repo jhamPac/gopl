@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/gob"
 	"io"
 	"log"
 	"net"
@@ -109,4 +110,37 @@ func (e *Endpoint) handleMessages(conn net.Conn) {
 		}
 		handleCommand(rw)
 	}
+}
+
+func handleStrings(rw *bufio.ReadWriter) {
+	log.Print("receive STRING message")
+	s, err := rw.ReadString('\n')
+	if err != nil {
+		log.Println("cannot read from connection.\n", err)
+	}
+	s = strings.Trim(s, "\n ")
+	log.Println(s)
+	_, err = rw.WriteString("Thank you.\n")
+	if err != nil {
+		log.Println("cannot write to connection.\n", err)
+	}
+	err = rw.Flush()
+	if err != nil {
+		log.Println("flush failed", err)
+	}
+}
+
+func handleGob(rw *bufio.ReadWriter) {
+	log.Print("receive GOB data")
+	var data complexData
+
+	dec := gob.NewDecoder(rw)
+	err := dec.Decode(&data)
+	if err != nil {
+		log.Println("error decoding GOB data:", err)
+		return
+	}
+
+	log.Printf("outer complexData struct: \n%#v\n", data)
+	log.Printf("inner complexData struct: \n%#v\n", data.C)
 }
