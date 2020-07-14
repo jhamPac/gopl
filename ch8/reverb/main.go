@@ -24,6 +24,7 @@ func handleConn(c net.Conn) {
 	input := bufio.NewScanner(c)
 	for input.Scan() {
 		wg.Add(1)
+		// every scan and echo starts its own goroutine
 		go echo(c, input.Text(), 1*time.Second, &wg)
 	}
 	wg.Wait()
@@ -41,6 +42,7 @@ func main() {
 			log.Print(err)
 			continue
 		}
+		// each connection gets a goroutine
 		go handleConn(conn)
 	}
 }
