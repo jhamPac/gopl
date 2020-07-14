@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -143,4 +144,47 @@ func handleGob(rw *bufio.ReadWriter) {
 
 	log.Printf("outer complexData struct: \n%#v\n", data)
 	log.Printf("inner complexData struct: \n%#v\n", data.C)
+}
+
+func client(ip string) error {
+	testStruct := complexData{
+		N: 42,
+		S: "Arrakis",
+		M: map[string]int{"alpha": 1, "bravo": 2, "charlie": 3},
+		P: []byte("abc"),
+		C: &complexData{
+			N: 365,
+			S: "recursive struct, complexData of complexData",
+			M: map[string]int{"delta": 4, "echo": 5, "foxtrot": 6},
+		},
+	}
+
+	rw, err := Open(ip + Port)
+	if err != nil {
+		return errors.Wrap(err, "client: failed to open connection to "+ip+Port)
+	}
+	log.Println("send the string request")
+	n, err := rw.WriteString("STRING\n")
+	if err != nil {
+		return errors.Wrapf(err, "could not send the STRING request (%d) bytes were written", strconv.Itoa(n))
+	}
+
+	n, err = rw.WriteString("additional data\n")
+	if err != nil {
+		return errors.Wrapf(err, "could not send additional STRING data (%d) bytes were written", strconv.Itoa(n))
+	}
+
+	log.Println("flush the buffer")
+	err = rw.Flush()
+	if err != nil {
+		return errors.Wrap(err, "flush failed")
+	}
+
+	log.Println("read the reply")
+	response, err := rw.ReadString('\n')
+	if err != nil {
+		return errors.Wrapf(err, "client: failed to read the reply: %s", response)
+	}
+
+	log.Println("STRING request: got a response:", response)
 }
