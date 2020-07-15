@@ -101,14 +101,18 @@ func linkNodes(n *html.Node) []*html.Node {
 	}
 	forEachNode(n, visitNode, nil)
 
-	// code to view each link
-	// hrefs := make([][]html.Attribute, len(links))
-	// for i, l := range links {
-	// 	hrefs[i] = make([]html.Attribute, len(l.Attr))
-	// 	hrefs[i] = append(hrefs[i], l.Attr...)
-	// 	hrefs[i] = hrefs[i][1:]
-	// }
-	// fmt.Printf("all the links are: %v\n\n\n", hrefs)
+	hrefs := make([][]html.Attribute, len(links))
+	for i, l := range links {
+		hrefs[i] = make([]html.Attribute, len(l.Attr))
+
+		for _, a := range l.Attr {
+			if a.Key == "href" && a.Val != "" {
+				hrefs[i] = append(hrefs[i], a)
+			}
+		}
+
+	}
+	fmt.Printf("all the links are: %v\n\n\n", hrefs)
 
 	return links
 }
