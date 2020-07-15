@@ -24,9 +24,10 @@ var base *url.URL
 
 func crawl(url string, depth int, wg *sync.WaitGroup) {
 	defer wg.Done()
-
+	fmt.Println("the depth is: =================", depth)
 	tokens <- struct{}{}
 	urls, err := visit(url)
+	<-tokens
 	if err != nil {
 		log.Printf("visit %s: %s", url, err)
 	}
@@ -49,7 +50,7 @@ func crawl(url string, depth int, wg *sync.WaitGroup) {
 }
 
 func visit(rawURL string) (urls []string, err error) {
-	fmt.Println(rawURL)
+	fmt.Println("rawURL in visit: ------------------x", rawURL)
 	resp, err := http.Get(rawURL)
 	if err != nil {
 		return nil, err
@@ -90,6 +91,7 @@ func visit(rawURL string) (urls []string, err error) {
 	return urls, err
 }
 
+// searches HTML doc for atags
 func linkNodes(n *html.Node) []*html.Node {
 	var links []*html.Node
 	visitNode := func(n *html.Node) {
@@ -98,6 +100,16 @@ func linkNodes(n *html.Node) []*html.Node {
 		}
 	}
 	forEachNode(n, visitNode, nil)
+
+	// code to view each link
+	// hrefs := make([][]html.Attribute, len(links))
+	// for i, l := range links {
+	// 	hrefs[i] = make([]html.Attribute, len(l.Attr))
+	// 	hrefs[i] = append(hrefs[i], l.Attr...)
+	// 	hrefs[i] = hrefs[i][1:]
+	// }
+	// fmt.Printf("all the links are: %v\n\n\n", hrefs)
+
 	return links
 }
 
