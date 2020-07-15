@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 
@@ -47,7 +48,7 @@ func crawl(url string, depth int, wg *sync.WaitGroup) {
 	}
 }
 
-func visit(rawURL string) (url []string, err error) {
+func visit(rawURL string) (urls []string, err error) {
 	fmt.Println(rawURL)
 	resp, err := http.Get(rawURL)
 	if err != nil {
@@ -154,6 +155,14 @@ func rewriteLocalLinks(linkNodes []*html.Node, base *url.URL) {
 			a.Val = link.String()
 			n.Attr[i] = a
 		}
+	}
+}
+
+func save(resp *http.Response, body io.Reader) error {
+	u := resp.Request.URL
+	filename := filepath.Join(u.Host, u.Path)
+	if filepath.Ext(u.Path) == "" {
+		filename = filepath.Join(u.Host, u.Path, "index.html")
 	}
 }
 
