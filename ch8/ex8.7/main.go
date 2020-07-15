@@ -2,11 +2,13 @@ package main
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 
@@ -153,4 +155,25 @@ func rewriteLocalLinks(linkNodes []*html.Node, base *url.URL) {
 			n.Attr[i] = a
 		}
 	}
+}
+
+func main() {
+	flag.IntVar(&maxDepth, "d", 3, "max crawl depth")
+	flag.Parse()
+	wg := &sync.WaitGroup{}
+
+	if len(flag.Args()) == 0 {
+		fmt.Fprintln(os.Stderr, "usage: mirror URL ...")
+	}
+
+	u, err := url.Parse(flag.Arg(0))
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "invalid url: %s\n", err)
+	}
+	base = u
+	for _, link := range flag.Args() {
+		wg.Add(1)
+		go crawl(link, 1, wg)
+	}
+	wg.Wait()
 }
