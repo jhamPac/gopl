@@ -164,6 +164,29 @@ func save(resp *http.Response, body io.Reader) error {
 	if filepath.Ext(u.Path) == "" {
 		filename = filepath.Join(u.Host, u.Path, "index.html")
 	}
+	err := os.MkdirAll(filepath.Dir(filename), 0777)
+	if err != nil {
+		return err
+	}
+	fmt.Println("filename:", filename)
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	if body != nil {
+		_, err = io.Copy(file, body)
+	} else {
+		_, err = io.Copy(file, resp.Body)
+	}
+	if err != nil {
+		log.Print("save: ", err)
+	}
+
+	err = file.Close()
+	if err != nil {
+		log.Print("save: ", err)
+	}
+	return nil
 }
 
 func main() {
