@@ -31,6 +31,18 @@ func crawl(url string, depth int, wg *sync.WaitGroup) {
 	if depth >= maxDepth {
 		return
 	}
+
+	for _, link := range urls {
+		seenLock.Lock()
+		if seen[link] {
+			seenLock.Unlock()
+			continue
+		}
+		seen[link] = true
+		seenLock.Unlock()
+		wg.Add(1)
+		go crawl(link, depth+1, wg)
+	}
 }
 
 func visit(rawURL string) (url []string, err error) {
@@ -84,4 +96,61 @@ func linkNodes(n *html.Node) []*html.Node {
 	}
 	forEachNode(n, visitNode, nil)
 	return links
+}
+
+func forEachNode(n *html.Node, pre, post func(n *html.Node)) {
+	if pre != nil {
+		pre(n)
+	}
+
+	for c := n.FirstChild; c != nil; c = c.NextSibling {
+		forEachNode(c, pre, post)
+	}
+
+	if post != nil {
+		post(n)
+	}
+}
+
+func linkURLs(linkNodes []*html.Node, base *url.URL) []string {
+	var urls []string
+	for _, n := range linkNodes {
+		for _, a := range n.Attr {
+			if a.Key != "href" {
+				continue
+			}
+			link, err := base.Parse(a.Val)
+			if err != nil {
+				log.Printf("skipping %q: %s", a.Val, err)
+				continue
+			}
+
+			if link.Host != base.Host {
+				log.Printf("skipping %q: non-local", a.Val)
+				continue
+			}
+			urls = append(urls, link.String())
+		}
+	}
+	return urls
+}
+
+func rewriteLocalLinks(linkNodes []*html.Node, base *url.URL) {
+	for _, n := range linkNodes {
+		for i, a := range n.Attr {
+			if a.Key != "href" {
+				continue
+			}
+			link, err := base.Parse(a.Val)
+			if err != nil || link.Host != base.Host {
+				continue
+			}
+
+			link.Scheme = ""
+			link.Host = ""
+			link.User = nil
+			a.Val = link.String()
+			n.Attr[i] = a
+		}
+	}
 }
