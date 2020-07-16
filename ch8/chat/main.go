@@ -29,7 +29,10 @@ func main() {
 }
 
 // outgoing message channel
-type client chan<- string
+type client struct {
+	Out  chan<- string // outgoing message channel
+	Name string
+}
 
 var (
 	entering = make(chan client)
@@ -44,34 +47,39 @@ func broadcaster() {
 		case msg := <-messages:
 			// broadcast message to all clients
 			for c := range clients {
-				c <- msg
+				c.Out <- msg
 			}
 
 		case c := <-entering:
 			clients[c] = true
+			c.Out <- "Present:"
+			for c := range clients {
+				c.Out <- c.Name
+			}
 
 		case c := <-leaving:
 			delete(clients, c)
-			close(c)
+			close(c.Out)
 		}
 	}
 }
 
 func handleConn(conn net.Conn) {
-	outgoingMsg := make(chan string)
-	go clientWriter(conn, outgoingMsg)
+	oCh := make(chan string)
+	go clientWriter(conn, oCh)
 
 	who := sillyname.Generate()
-	outgoingMsg <- "client[ID] " + who
+	c := client{oCh, who}
+	oCh <- "chat name: " + who
 	messages <- who + " has entered the chat room"
-	entering <- outgoingMsg
+	entering <- c
 
 	input := bufio.NewScanner(conn)
 	for input.Scan() {
 		messages <- who + ": " + input.Text()
 	}
 
-	leaving <- outgoingMsg
+	leaving <- c
 	messages <- who + " has left"
 	conn.Close()
 }
