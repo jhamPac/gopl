@@ -39,8 +39,8 @@ func handleConn(c net.Conn) {
 
 	lines := make(chan string)
 	go scan(c, lines)
-	timeout := 2 * time.Second
-	timer := time.NewTimer(2 * time.Second)
+	timeout := 3 * time.Second
+	timer := time.NewTimer(3 * time.Second)
 	for {
 		select {
 		case line := <-lines:
@@ -49,6 +49,7 @@ func handleConn(c net.Conn) {
 			go echo(c, line, 1*time.Second, wg)
 
 		case <-timer.C:
+			fmt.Println("timer is done")
 			return
 		}
 	}
