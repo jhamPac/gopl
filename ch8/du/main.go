@@ -10,9 +10,8 @@ import (
 	"time"
 )
 
-var vFlag = flag.Bool("v", false, "show verbose progress messags")
-
 func main() {
+	var vFlag = flag.Bool("v", false, "show verbose progress messags")
 	flag.Parse()
 
 	roots := flag.Args()
