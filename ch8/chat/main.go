@@ -70,24 +70,37 @@ func broadcaster() {
 func handleConn(conn net.Conn) {
 	out := make(chan string)
 	go clientWriter(conn, out)
+	in := make(chan string)
+	go clientReader(conn, in)
 
-	who := sillyname.Generate()
+	var who string
+	nameTimer := time.NewTimer(15 * time.Second)
+	out <- "Enter your name"
+
+	select {
+	case name := <-in:
+		who = name
+	case <-nameTimer.C:
+		who = sillyname.Generate()
+	}
+
 	c := client{out, who}
 	out <- "chat name: " + who
 	messages <- who + " has entered the chat room"
 	entering <- c
+	idle := time.NewTimer(timeout)
 
-	// disconnect client if no activity
-	timer := time.NewTimer(timeout)
-	go func() {
-		<-timer.C
-		conn.Close()
-	}()
+Loop:
+	for {
+		select {
+		case msg := <-in:
+			messages <- who + ": " + msg
+			idle.Reset(timeout)
 
-	input := bufio.NewScanner(conn)
-	for input.Scan() {
-		messages <- who + ": " + input.Text()
-		timer.Reset(timeout)
+		case <-idle.C:
+			conn.Close()
+			break Loop
+		}
 	}
 
 	leaving <- c
@@ -98,5 +111,12 @@ func handleConn(conn net.Conn) {
 func clientWriter(conn net.Conn, ch <-chan string) {
 	for msg := range ch {
 		fmt.Fprintln(conn, msg)
+	}
+}
+
+func clientReader(conn net.Conn, ch chan<- string) {
+	input := bufio.NewScanner(conn)
+	for input.Scan() {
+		ch <- input.Text()
 	}
 }
