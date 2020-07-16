@@ -15,6 +15,9 @@ func main() {
 		log.Fatal(err)
 	}
 	go broadcaster()
+
+	log.Println("chat server listening on port: 9000")
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
