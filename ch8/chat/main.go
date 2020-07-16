@@ -10,6 +10,20 @@ import (
 	"github.com/jhampac/gopl/ch8/chat/sillyname"
 )
 
+const timeout = 10 * time.Second
+
+// outgoing message channel
+type client struct {
+	Out  chan<- string // outgoing message channel
+	Name string
+}
+
+var (
+	entering = make(chan client)
+	leaving  = make(chan client)
+	messages = make(chan string)
+)
+
 func main() {
 	listener, err := net.Listen("tcp", "localhost:9000")
 	if err != nil {
@@ -28,20 +42,6 @@ func main() {
 		go handleConn(conn)
 	}
 }
-
-const timeout = 5 * time.Second
-
-// outgoing message channel
-type client struct {
-	Out  chan<- string // outgoing message channel
-	Name string
-}
-
-var (
-	entering = make(chan client)
-	leaving  = make(chan client)
-	messages = make(chan string)
-)
 
 func broadcaster() {
 	clients := make(map[client]bool)
@@ -74,7 +74,7 @@ func handleConn(conn net.Conn) {
 	go clientReader(conn, in)
 
 	var who string
-	nameTimer := time.NewTimer(15 * time.Second)
+	nameTimer := time.NewTimer(10 * time.Second)
 	out <- "Enter your name"
 
 	select {
