@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+
+	"github.com/jhampac/gopl/ch8/chat/sillyname"
 )
 
 func main() {
@@ -56,7 +58,7 @@ func handleConn(conn net.Conn) {
 	outgoingMsg := make(chan string)
 	go clientWriter(conn, outgoingMsg)
 
-	who := conn.RemoteAddr().String()
+	who := sillyname.Generate()
 	outgoingMsg <- "client[ID] " + who
 	messages <- who + " has entered the chat room"
 	entering <- outgoingMsg
