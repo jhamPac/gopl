@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	"github.com/jhampac/gopl/ch8/chat/sillyname"
 )
@@ -27,6 +28,8 @@ func main() {
 		go handleConn(conn)
 	}
 }
+
+const timeout = 5 * time.Second
 
 // outgoing message channel
 type client struct {
@@ -65,18 +68,26 @@ func broadcaster() {
 }
 
 func handleConn(conn net.Conn) {
-	oCh := make(chan string)
-	go clientWriter(conn, oCh)
+	out := make(chan string)
+	go clientWriter(conn, out)
 
 	who := sillyname.Generate()
-	c := client{oCh, who}
-	oCh <- "chat name: " + who
+	c := client{out, who}
+	out <- "chat name: " + who
 	messages <- who + " has entered the chat room"
 	entering <- c
+
+	// disconnect client if no activity
+	timer := time.NewTimer(timeout)
+	go func() {
+		<-timer.C
+		conn.Close()
+	}()
 
 	input := bufio.NewScanner(conn)
 	for input.Scan() {
 		messages <- who + ": " + input.Text()
+		timer.Reset(timeout)
 	}
 
 	leaving <- c
