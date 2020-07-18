@@ -12,7 +12,7 @@ import (
 
 const timeout = 10 * time.Second
 
-// outgoing message channel
+// client represents a chat client
 type client struct {
 	Out  chan<- string // outgoing message channel
 	Name string
