@@ -98,7 +98,7 @@ Loop:
 			idle.Reset(timeout)
 
 		case <-idle.C:
-			conn.Close()
+			log.Printf("%s idled too long", who)
 			break Loop
 		}
 	}
