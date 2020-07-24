@@ -44,3 +44,15 @@ func TestWithdrawal(t *testing.T) {
 		t.Errorf("balance = %d, want %d", b2, expected)
 	}
 }
+
+func TestWithdrawalFailsIfInsufficientFunds(t *testing.T) {
+	b1 := Balance()
+	ok := Withdraw(b1 + 1)
+	b2 := Balance()
+	if ok {
+		t.Errorf("ok = true, want false: balance = %d", b2)
+	}
+	if b2 != b1 {
+		t.Errorf("balance = %d, want %d", b2, b1)
+	}
+}
