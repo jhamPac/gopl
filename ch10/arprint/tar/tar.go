@@ -4,7 +4,13 @@ import (
 	"archive/tar"
 	"io"
 	"os"
+
+	"github.com/jhampac/gopl/ch10/arprint"
 )
+
+func init() {
+	arprint.RegisterFormat("tar", "ustar", 257, NewReader)
+}
 
 type reader struct {
 	tarReader *tar.Reader
@@ -41,4 +47,9 @@ func (r *reader) Read(b []byte) (written int, err error) {
 		}
 	}
 	return written, nil
+}
+
+// NewReader implementation for tar
+func NewReader(f *os.File) (io.Reader, error) {
+	return &reader{tar.NewReader(f), f, ""}, nil
 }
