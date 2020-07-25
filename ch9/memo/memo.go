@@ -90,3 +90,14 @@ Loop:
 		}
 	}
 }
+
+func (e *entry) call(f Func, key string, done <-chan struct{}) {
+	e.res.value, e.res.err = f(key, done)
+	fmt.Println("call: returned from f")
+	close(e.ready)
+}
+
+func (e *entry) deliver(response chan<- result) {
+	<-e.ready
+	response <- e.res
+}
