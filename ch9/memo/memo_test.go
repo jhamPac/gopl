@@ -26,6 +26,25 @@ func TestCancel(t *testing.T) {
 	wg1 := &sync.WaitGroup{}
 	wg1.Add(1)
 	go func() {
-		
-	}
+		v, err := m.Get(key, done)
+		wg1.Done()
+		if v != nil || err != cancelled {
+			t.Errorf("got %v, %v; want %v, %v", v, err, nil, cancelled)
+		}
+	}()
+	close(done)
+	wg1.Wait()
+
+	wg2 := &sync.WaitGroup{}
+	wg2.Add(1)
+	go func() {
+		v, err := m.Get(key, nil)
+		s := v.(string)
+		if s != "ok" || err != nil {
+			t.Errorf("got %v, %v; want %v, %v", s, err, "ok", nil)
+		}
+		wg2.Done()
+	}()
+	finish <- "ok"
+	wg2.Wait()
 }
