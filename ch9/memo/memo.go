@@ -33,6 +33,7 @@ func New(f Func) *Memo {
 	return memo
 }
 
+// Get invokes the function to be memoized
 func (memo *Memo) Get(key string, done <-chan struct{}) (interface{}, error) {
 	response := make(chan result)
 	req := request{key, done, response}
@@ -47,5 +48,45 @@ func (memo *Memo) Get(key string, done <-chan struct{}) (interface{}, error) {
 		memo.cancels <- req
 	default:
 		// not cancelled so continue
+	}
+	fmt.Println("get: return")
+	return res.value, res.err
+}
+
+// Close the channel for requests
+func (memo *Memo) Close() { close(memo.requests) }
+
+func (memo *Memo) server(f Func) {
+	cache := make(map[string]*entry)
+
+Loop:
+	for {
+	Cancel:
+		for {
+			select {
+			case req := <-memo.cancels:
+				fmt.Println("server: deleting cancelled entry (early)")
+				delete(cache, req.key)
+
+			default:
+				break Cancel
+			}
+		}
+
+		select {
+		case req := <-memo.cancels:
+			fmt.Println("server: deleting cancelled entry")
+			delete(cache, req.key)
+			continue Loop
+		case req := <-memo.requests:
+			fmt.Println("server: request")
+			e := cache[req.key]
+			if e == nil {
+				e = &entry{ready: make(chan struct{})}
+				cache[req.key] = e
+				go e.call(f, req.key, req.done)
+			}
+			go e.deliver(req.response)
+		}
 	}
 }
