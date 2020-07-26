@@ -89,7 +89,7 @@ func (s *BitIntSet) Copy() IntSet {
 }
 
 func (s *BitIntSet) String() string {
-	var buf bytes.Buffer
+	buf := &bytes.Buffer{}
 	buf.WriteByte('{')
 
 	for i, word := range s.words {
@@ -102,7 +102,7 @@ func (s *BitIntSet) String() string {
 				if buf.Len() > len("{") {
 					buf.WriteByte(' ')
 				}
-				fmt.Fprintf(&buf, "%d", 64*i+j)
+				fmt.Fprintf(buf, "%d", 64*i+j)
 			}
 		}
 	}
