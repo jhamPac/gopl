@@ -1,5 +1,10 @@
 package main
 
+import (
+	"bytes"
+	"fmt"
+)
+
 // BitIntSet is a set of small non-negative integers. Its zero value represents the empty set
 type BitIntSet struct {
 	words []uint64
@@ -60,4 +65,64 @@ func (s *BitIntSet) Len() int {
 		count += popcount(word)
 	}
 	return count
+}
+
+// Remove x from set
+func (s *BitIntSet) Remove(x int) {
+	word, bit := x/64, uint(x%64)
+	s.words[word] &^= 1 << bit
+}
+
+// Clear all elements from the set
+func (s *BitIntSet) Clear() {
+	for i := range s.words {
+		s.words[i] = 0
+	}
+}
+
+// Copy and return a set
+func (s *BitIntSet) Copy() IntSet {
+	new := &BitIntSet{}
+	new.words = make([]uint64, len(s.words))
+	copy(new.words, s.words)
+	return new
+}
+
+func (s *BitIntSet) String() string {
+	var buf bytes.Buffer
+	buf.WriteByte('{')
+
+	for i, word := range s.words {
+		if word == 0 {
+			continue
+		}
+
+		for j := 0; j < 64; j++ {
+			if word&(1<<uint(j)) != 0 {
+				if buf.Len() > len("{") {
+					buf.WriteByte(' ')
+				}
+				fmt.Fprintf(&buf, "%d", 64*i+j)
+			}
+		}
+	}
+	buf.WriteByte('}')
+	return buf.String()
+}
+
+// Ints returns a slice of ints
+func (s *BitIntSet) Ints() []int {
+	var ints []int
+	for i, word := range s.words {
+		if word == 0 {
+			continue
+		}
+
+		for j := 0; j < 64; j++ {
+			if word&(1<<uint(j)) != 0 {
+				ints = append(ints, 64*i+j)
+			}
+		}
+	}
+	return ints
 }
